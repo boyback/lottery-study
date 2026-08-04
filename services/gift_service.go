@@ -2,12 +2,13 @@ package services
 
 import (
 	"lottery-study/dao"
+	"lottery-study/datasource"
 	"lottery-study/models"
 )
 
 type GiftService interface {
 	Get(id int) *models.LtGift
-	GetList() []*models.LtGift
+	GetList() []models.LtGift
 	CountAll() int64
 	Delete(id int) error
 	Update(data *models.LtGift) error
@@ -23,9 +24,8 @@ func (s *giftService) Get(id int) *models.LtGift {
 	panic("implement me")
 }
 
-func (s *giftService) GetList() []*models.LtGift {
-	//TODO implement me
-	panic("implement me")
+func (s *giftService) GetList() []models.LtGift {
+	return s.dao.GetAll()
 }
 
 func (s *giftService) CountAll() int64 {
@@ -55,9 +55,6 @@ func (s *giftService) GetByIp(ip string) *models.LtGift {
 
 func NewGiftService() GiftService {
 	return &giftService{
-		dao: dao.NewGiftDao(nil),
+		dao: dao.NewGiftDao(datasource.InstanceDbMaster()),
 	}
-}
-func (s *giftService) GetAll() []*models.LtGift {
-	return []*models.LtGift{}
 }

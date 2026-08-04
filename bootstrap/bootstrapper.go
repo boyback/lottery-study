@@ -87,17 +87,16 @@ const (
 )
 
 func (b *Bootstrapper) Bootstrap() *Bootstrapper {
-	b.SetupViews("./views")
+	b.SetupViews("./views") // 注册模版
 
-	b.SetupErrorHandlers()
+	b.SetupErrorHandlers() // 注册错误页
 
 	b.Favicon(StaticAssets + Favicon)
-	b.HandleDir(StaticAssets[1:], iris.Dir(StaticAssets))
+	b.HandleDir(StaticAssets[1:], iris.Dir(StaticAssets)) // 静态资源
 
-	b.setupCron()
+	b.setupCron() // 定时任务(预留)
 
-	b.Use(recover.New())
-	b.Use(logger.New())
+	b.Use(recover.New(), logger.New()) // 中间件
 
 	return b
 }
