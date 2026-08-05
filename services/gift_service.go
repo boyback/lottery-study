@@ -11,7 +11,7 @@ type GiftService interface {
 	GetList() []models.LtGift
 	CountAll() int64
 	Delete(id int) error
-	Update(data *models.LtGift) error
+	Update(data *models.LtGift, columns []string) error
 	Create(data *models.LtGift) error
 	GetByIp(ip string) *models.LtGift
 }
@@ -38,9 +38,10 @@ func (s *giftService) Delete(id int) error {
 	panic("implement me")
 }
 
-func (s *giftService) Update(data *models.LtGift) error {
+func (s *giftService) Update(data *models.LtGift, columns []string) error {
 	//TODO implement me
 	panic("implement me")
+	return s.dao.Update(data, columns)
 }
 
 func (s *giftService) Create(data *models.LtGift) error {
