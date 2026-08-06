@@ -20,7 +20,7 @@ type AdminGiftController struct {
 }
 
 func (c *AdminGiftController) Get() mvc.Result {
-	datalist := c.ServiceGift.GetList()
+	datalist := c.ServiceGift.GetList(false)
 	for i, giftInfo := range datalist {
 		// 奖品发放的计划数据
 		prizedata := make([][2]int, 0)
@@ -61,7 +61,7 @@ func (c *AdminGiftController) GetEdit() mvc.Result {
 	id := c.Ctx.URLParamIntDefault("id", 0)
 	giftInfo := viewmodels.ViewGift{}
 	if id > 0 {
-		data := c.ServiceGift.Get(id)
+		data := c.ServiceGift.Get(id, false)
 		giftInfo.Id = data.Id
 		giftInfo.Title = data.Title
 		giftInfo.PrizeNum = data.PrizeNum
@@ -79,7 +79,7 @@ func (c *AdminGiftController) GetEdit() mvc.Result {
 		Data: iris.Map{
 			"Title":   "管理后台",
 			"Channel": "gift",
-			"Info":    giftInfo,
+			"info":    giftInfo,
 		},
 		Layout: "admin/layout.html",
 	}
@@ -114,7 +114,7 @@ func (c *AdminGiftController) PostSave() mvc.Result {
 	giftInfo.TimeBegin = int(t1.Unix())
 	giftInfo.TimeEnd = int(t2.Unix())
 	if giftInfo.Id > 0 {
-		datainfo := c.ServiceGift.Get(giftInfo.Id)
+		datainfo := c.ServiceGift.Get(giftInfo.Id, false)
 		if datainfo != nil && datainfo.Id > 0 {
 			//奖品数量变化
 			if datainfo.PrizeNum != giftInfo.PrizeNum {

@@ -27,7 +27,7 @@ func DistributionGiftPool() int {
 	totalNum := 0
 	now := comm.NowUnix()
 	giftService := services.NewGiftService()
-	list := giftService.GetList()
+	list := giftService.GetList(false)
 	if list != nil && len(list) > 0 {
 		for _, gift := range list {
 			// 是否正常状态
@@ -95,7 +95,7 @@ func DistributionGiftPool() int {
 		}
 		if totalNum > 0 {
 			// 预加载缓存数据
-			giftService.GetList()
+			giftService.GetList(false)
 		}
 	}
 	return totalNum
@@ -106,6 +106,39 @@ func GetGiftPoolNum(id int) int {
 	num := 0
 	num = getServGiftPoolNum(id)
 	return num
+}
+
+// 优惠券类的发放
+func PrizeCodeDiff(id int, codeService services.CodeService) string {
+	return prizeServCodeDiff(id, codeService)
+}
+
+// 获取当前的缓存中编码数量
+// 返回，剩余编码数量，缓冲中编码数量
+func GetCacheCodeNum(id int, codeService services.CodeService) (int, int) {
+	num := 0
+	cacheNum := 0
+	// 统计数据库中有效编码数量
+	list := codeService.Search(id)
+	if len(list) > 0 {
+		for _, data := range list {
+			if data.SysStatus == 0 {
+				num++
+			}
+		}
+	}
+
+	// redis中缓存的key值
+	key := fmt.Sprintf("gift_code_%d", id)
+	cacheObj := datasource.InstanceCache()
+	rs, err := cacheObj.Do("SCARD", key)
+	if err != nil {
+		log.Println("prizedata.RecacheCodes RENAME error=", err)
+	} else {
+		cacheNum = int(comm.GetInt64(rs, 0))
+	}
+
+	return num, cacheNum
 }
 
 // 导入新的优惠券编码
@@ -252,4 +285,27 @@ func getServGiftPoolNum(id int) int {
 	}
 	num := comm.GetInt64(rs, 0)
 	return int(num)
+}
+
+// 优惠券发放，使用redis的方式发放
+func prizeServCodeDiff(id int, codeService services.CodeService) string {
+	key := fmt.Sprintf("gift_code_%d", id)
+	cacheObj := datasource.InstanceCache()
+	rs, err := cacheObj.Do("SPOP", key)
+	if err != nil {
+		log.Println("prizedata.prizeServCodeDiff error=", err)
+		return ""
+	}
+	code := comm.GetString(rs, "")
+	if code == "" {
+		log.Printf("prizedata.prizeServCodeDiff rs=%s", rs)
+		return ""
+	}
+	// 更新数据库中的发放状态
+	codeService.UpdateByCode(&models.LtCode{
+		Code:       code,
+		SysStatus:  2,
+		SysUpdated: comm.NowUnix(),
+	}, nil)
+	return code
 }

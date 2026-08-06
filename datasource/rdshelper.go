@@ -62,7 +62,7 @@ func InstanceCache() *RedisConn {
 func NewCache() *RedisConn {
 	pool := redis.Pool{
 		Dial: func() (redis.Conn, error) {
-			c, err := redis.Dial("tcp", fmt.Sprintf("%s:%d", conf.RedisCache.Host, conf.RedisCache.Port))
+			c, err := redis.Dial("tcp", fmt.Sprintf("%s:%s", conf.RedisCache.Host, conf.RedisCache.Port))
 			if err != nil {
 				log.Fatal("rdshelper.NewCache Dial error ", err)
 				return nil, err

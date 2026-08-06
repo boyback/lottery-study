@@ -19,7 +19,7 @@ func (c *IndexController) GetGifts() map[string]interface{} {
 	result := make(map[string]interface{})
 	result["code"] = 0
 	result["msg"] = "success"
-	result["list"] = c.ServiceGift.GetList()
+	result["list"] = c.ServiceGift.GetList(false)
 	return result
 }
 func (c *IndexController) GetNewPrize() map[string]interface{} {

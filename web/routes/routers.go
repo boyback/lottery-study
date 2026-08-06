@@ -24,4 +24,9 @@ func ConfigureRoutes(b *bootstrap.Bootstrapper) {
 	adminGift.Router.Use(middleware.BasicAuth)
 	adminGift.Register(giftService)
 	adminGift.Handle(new(controllers.AdminGiftController))
+
+	codeService := services.NewCodeService()
+	adminCode := admin.Party("/code")
+	adminCode.Register(codeService)
+	adminCode.Handle(new(controllers.AdminCodeController))
 }
