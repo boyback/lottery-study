@@ -20,6 +20,10 @@ func ConfigureRoutes(b *bootstrap.Bootstrapper) {
 	index.Register(giftService)
 	index.Handle(new(controllers.IndexController))
 
+	lucky := mvc.New(b.Party("/lucky"))
+	lucky.Register(userService, giftService, codeService, resultService, blackipService)
+	lucky.Handle(new(controllers.IndexLuckyController))
+
 	admin := mvc.New(b.Party("/admin"))
 	admin.Router.Use(middleware.BasicAuth)
 	admin.Register(giftService)

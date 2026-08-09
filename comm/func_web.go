@@ -34,6 +34,7 @@ func GetLoginUser(request *http.Request) *models.ObjLoginuser {
 		return nil
 	}
 	uid, err := strconv.Atoi(params.Get("uid"))
+	log.Println(uid)
 	if err != nil || uid < 1 {
 		return nil
 	}

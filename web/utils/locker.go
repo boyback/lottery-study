@@ -27,6 +27,7 @@ func getLuckyLockKey(uid int) string {
 func lockLuckyServ(uid int) bool {
 	key := getLuckyLockKey(uid)
 	cacheObj := datasource.InstanceCache()
+	//给请求的这个用户设置一个3s的锁 超过3s自动给结果后进行释放
 	rs, _ := cacheObj.Do("SET", key, 1, "EX", 3, "NX")
 	if rs == "OK" {
 		return true

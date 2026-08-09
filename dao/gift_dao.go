@@ -2,6 +2,7 @@ package dao
 
 import (
 	"log"
+	"lottery-study/comm"
 	"lottery-study/models"
 
 	"xorm.io/xorm"
@@ -51,6 +52,29 @@ func (d *GiftDao) Create(data *models.LtGift) error {
 	_, err := d.engine.Insert(data)
 	return err
 }
+
+// 获取到当前可以获取的奖品列表
+// 有奖品限定，状态正常，时间期间内
+// gtype倒序， displayorder正序
+func (d *GiftDao) GetAllUse() []models.LtGift {
+	now := comm.NowUnix()
+	datalist := make([]models.LtGift, 0)
+	err := d.engine.
+		Cols("id", "title", "prize_num", "left_num", "prize_code",
+			"prize_time", "img", "displayorder", "gtype", "gdata").
+		Desc("gtype").
+		Asc("displayorder").
+		Where("prize_num>=?", 0).    // 有限定的奖品
+		Where("sys_status=?", 0).    // 有效的奖品
+		Where("time_begin<=?", now). // 时间期内
+		Where("time_end>=?", now).   // 时间期内
+		Find(&datalist)
+	if err != nil {
+		return datalist
+	} else {
+		return datalist
+	}
+}
 func (d *GiftDao) GetByIp(ip string) *models.LtGift {
 	var data models.LtGift
 	ok, err := d.engine.Where("ip=?", ip).Desc("id").Get(&data)
@@ -59,4 +83,19 @@ func (d *GiftDao) GetByIp(ip string) *models.LtGift {
 		return nil
 	}
 	return &data
+}
+func (d *GiftDao) IncrLeftNum(id, num int) (int64, error) {
+	r, err := d.engine.ID(id).
+		Incr("left_num", num).
+		//Where("left_num=?", num).
+		Update(&models.LtGift{Id: id})
+	return r, err
+}
+
+func (d *GiftDao) DecrLeftNum(id, num int) (int64, error) {
+	r, err := d.engine.ID(id).
+		Decr("left_num", num).
+		Where("left_num>=?", num).
+		Update(&models.LtGift{Id: id})
+	return r, err
 }
