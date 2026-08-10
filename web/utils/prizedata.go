@@ -169,6 +169,37 @@ func ImportCacheCodes(id int, code string) bool {
 	}
 }
 
+// 重新整理优惠券的编码到缓存中
+func RecacheCodes(id int, codeService services.CodeService) (sucNum, errNum int) {
+	// 集群版本需要放入到redis中
+	// [暂时]本机版本的就直接从数据库中处理吧
+	list := codeService.Search(id)
+	if list == nil || len(list) <= 0 {
+		return 0, 0
+	}
+	// redis中缓存的key值
+	key := fmt.Sprintf("gift_code_%d", id)
+	cacheObj := datasource.InstanceCache()
+	tmpKey := "tmp_" + key
+	for _, data := range list {
+		if data.SysStatus == 0 {
+			code := data.Code
+			_, err := cacheObj.Do("SADD", tmpKey, code)
+			if err != nil {
+				log.Println("prizedata.RecacheCodes SADD error=", err)
+				errNum++
+			} else {
+				sucNum++
+			}
+		}
+	}
+	_, err := cacheObj.Do("RENAME", tmpKey, key)
+	if err != nil {
+		log.Println("prizedata.RecacheCodes RENAME error=", err)
+	}
+	return sucNum, errNum
+}
+
 // 将每天、每小时、每分钟的奖品数量，格式化成具体到一个时间（分钟）的奖品数量
 // 结构为： [day][hour][minute]num
 func formatGiftPrizeData(nowTime, dayNum int, prizeData map[int]map[int][60]int) [][2]int {

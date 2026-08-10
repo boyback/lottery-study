@@ -42,11 +42,18 @@ func (c *IndexLuckyController) Get() map[string]interface{} {
 		return result
 	}
 	//3.用户今日是否达到抽奖最大限制
-	ok = c.CheckUserday(loginUser.Uid)
-	if !ok {
-		result["code"] = 100003
+	userDayNum := utils.IncrUserLuckyNum(loginUser.Uid)
+	if userDayNum > conf.UserPrizeMax {
+		result["code"] = 400002
 		result["msg"] = "抽奖次数超限 请明天再来"
 		return result
+	} else {
+		ok = c.CheckUserday(loginUser.Uid, userDayNum)
+		if !ok {
+			result["code"] = 100003
+			result["msg"] = "抽奖次数超限 请明天再来"
+			return result
+		}
 	}
 	//4.用户今日ip是否达到最大抽奖限制(可能一个公司的ip几个账号再用)
 	ip := comm.ClientIP(c.Ctx.Request())

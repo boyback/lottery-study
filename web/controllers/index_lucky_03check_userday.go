@@ -5,17 +5,24 @@ import (
 	"log"
 	"lottery-study/conf"
 	"lottery-study/models"
+	"lottery-study/web/utils"
 	"strconv"
 	"time"
 )
 
-func (c *IndexLuckyController) CheckUserday(uid int) bool {
+func (c *IndexLuckyController) CheckUserday(uid int, num int64) bool {
 	userdayInfo := c.userdayService.GetUserToday(uid)
 	if userdayInfo != nil && userdayInfo.Uid == uid {
 		if userdayInfo.Num >= conf.UserPrizeMax {
+			if int(num) < userdayInfo.Num {
+				utils.InitUserLuckyNum(uid, int64(userdayInfo.Num))
+			}
 			return false
 		} else {
 			userdayInfo.Num++
+			if int(num) < userdayInfo.Num {
+				utils.InitUserLuckyNum(uid, int64(userdayInfo.Num))
+			}
 			err := c.userdayService.Update(userdayInfo, nil)
 			if err != nil {
 				log.Println("userdayService.Update error")
