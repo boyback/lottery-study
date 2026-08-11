@@ -137,18 +137,18 @@ func (c *AdminCodeController) GetReset() mvc.Result {
 
 // 重新整理优惠券的数据，如果是本地服务，也需要启动时加载
 func (c *AdminCodeController) GetRecache() {
-	//refer := c.Ctx.GetHeader("Referer")
-	//if refer == "" {
-	//	refer = "/admin/code"
-	//}
-	//id, err := c.Ctx.URLParamInt("id")
-	//if id < 1 || err != nil {
-	//	rs := fmt.Sprintf("没有指定优惠券所属的奖品id, <a href='%s'>返回</a>", refer)
-	//	c.Ctx.HTML(rs)
-	//	return
-	//}
-	//sucNum, errNum := utils.RecacheCodes(id, c.ServiceCode)
-	//
-	//rs := fmt.Sprintf("sucNum=%d, errNum=%d, <a href='%s'>返回</a>", sucNum, errNum, refer)
-	//c.Ctx.HTML(rs)
+	refer := c.Ctx.GetHeader("Referer")
+	if refer == "" {
+		refer = "/admin/code"
+	}
+	id, err := c.Ctx.URLParamInt("id")
+	if id < 1 || err != nil {
+		rs := fmt.Sprintf("没有指定优惠券所属的奖品id, <a href='%s'>返回</a>", refer)
+		c.Ctx.HTML(rs)
+		return
+	}
+	sucNum, errNum := utils.RecacheCodes(id, c.ServiceCode)
+
+	rs := fmt.Sprintf("sucNum=%d, errNum=%d, <a href='%s'>返回</a>", sucNum, errNum, refer)
+	c.Ctx.HTML(rs)
 }

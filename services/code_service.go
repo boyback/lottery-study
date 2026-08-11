@@ -62,6 +62,7 @@ func (s *codeService) Create(data *models.LtCode) error {
 }
 
 func (s *codeService) NextUsingCode(giftId, codeId int) *models.LtCode {
+
 	return s.dao.NextUsingCode(giftId, codeId)
 }
 
