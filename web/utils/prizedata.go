@@ -107,6 +107,33 @@ func ResetGiftPrizeData(giftInfo *models.LtGift, giftService services.GiftServic
 	}
 }
 
+// 清空奖品的发放计划
+func clearGiftPrizeData(giftInfo *models.LtGift, giftService services.GiftService) {
+	info := &models.LtGift{
+		Id:        giftInfo.Id,
+		PrizeData: "",
+	}
+	err := giftService.Update(info, []string{"prize_data"})
+	if err != nil {
+		log.Println("prizedata.clearGiftPrizeData giftService.Update",
+			info, ", error=", err)
+	}
+	setGiftPool(giftInfo.Id, 0)
+}
+
+// 获取当前奖品池中的奖品数量，从redis中
+func getServGiftPoolNum(id int) int {
+	key := "gift_pool"
+	cacheObj := datasource.InstanceCache()
+	rs, err := cacheObj.Do("HGET", key, id)
+	if err != nil {
+		log.Println("prizedata.getServGiftPoolNum error=", err)
+		return 0
+	}
+	num := comm.GetInt64(rs, 0)
+	return int(num)
+}
+
 /**
  * 根据奖品的发奖计划，把设定的奖品数量放入奖品池
  * 需要每分钟执行一次
@@ -339,8 +366,17 @@ func getGiftPrizeDataOneDay(num int) map[int][60]int {
 	return rs
 }
 
-// 将每天、每小时、每分钟的奖品数量，格式化成具体到一个时间（分钟）的奖品数量
-// 结构为： [day][hour][minute]num
+/**
+ * 将每天、每小时、每分钟的奖品数量，格式化成具体到一个时间（分钟）的奖品数量 结构为： [day][hour][minute]num
+ * nowTime：从什么时候开始算
+ * dayNum：算几天
+ * prizeData：每一天、每小时、每分钟发多少奖品
+ * 第0天 10点05分 发2个; 第0天 11点30分 发1个
+ * [][2]int{
+ *  {2026-08-13 10:05:00 的时间戳, 2},
+ *  {2026-08-13 11:30:00 的时间戳, 1},
+ * }
+ */
 func formatGiftPrizeData(nowTime, dayNum int, prizeData map[int]map[int][60]int) [][2]int {
 	rs := make([][2]int, 0)
 	nowHour := time.Now().Hour()
@@ -440,33 +476,6 @@ func setServGiftPool(id, num int) {
 	if err != nil {
 		log.Println("prizedata.setServGiftPool error=", err)
 	}
-}
-
-// 清空奖品的发放计划
-func clearGiftPrizeData(giftInfo *models.LtGift, giftService services.GiftService) {
-	info := &models.LtGift{
-		Id:        giftInfo.Id,
-		PrizeData: "",
-	}
-	err := giftService.Update(info, []string{"prize_data"})
-	if err != nil {
-		log.Println("prizedata.clearGiftPrizeData giftService.Update",
-			info, ", error=", err)
-	}
-	setGiftPool(giftInfo.Id, 0)
-}
-
-// 获取当前奖品池中的奖品数量，从redis中
-func getServGiftPoolNum(id int) int {
-	key := "gift_pool"
-	cacheObj := datasource.InstanceCache()
-	rs, err := cacheObj.Do("HGET", key, id)
-	if err != nil {
-		log.Println("prizedata.getServGiftPoolNum error=", err)
-		return 0
-	}
-	num := comm.GetInt64(rs, 0)
-	return int(num)
 }
 
 // 优惠券类的发放

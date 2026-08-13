@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"lottery-study/conf"
+	"lottery-study/cron"
 	"time"
 
 	"github.com/kataras/iris/v12"
@@ -75,9 +76,9 @@ func (b *Bootstrapper) Configure(cs ...Configurator) {
 // 启动计划任务服务
 func (b *Bootstrapper) setupCron() {
 	// 服务类应用
-	//if conf.RunningCrontabService {
-	//	cron.ConfigueAppOneCron()
-	//}
+	if conf.RunningCrontabService {
+		cron.ConfigueAppOneCron()
+	}
 	//cron.ConfigueAppAllCron()
 }
 
